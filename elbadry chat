@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>elbadry chat</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 3px solid #3e8e41;
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fafafa;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            background-color: #e0e0e0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            max-width: 75%;
+            word-wrap: break-word;
+            animation: slideUp 0.3s ease;
+        }
+
+        .message .username {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .chat-input input:focus {
+            border-color: #4CAF50;
+        }
+
+        .chat-input button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            background-color: #45a049;
+        }
+
+        /* Form for user to enter their name */
+        #usernameForm {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #usernameForm input {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #usernameForm button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #usernameForm button:hover {
+            background-color: #45a049;
+        }
+
+        /* Video chat styles */
+        .video-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .video-buttons {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+
+        .video-buttons button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .video-buttons button:hover {
+            background-color: #45a049;
+        }
+
+        /* Media Queries for responsiveness */
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 10px;
+            }
+
+            .chat-input {
+                flex-direction: column;
+            }
+
+            .chat-input input {
+                margin-bottom: 10px;
+            }
+
+            .video-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <header>
+            <h1>elbadry chat</h1>
+            <p>تواصل مع زملائك بسهولة وسرعة</p>
+        </header>
+
+        <!-- Form to input username -->
+        <div id="usernameForm">
+            <input type="text" id="usernameInput" placeholder="أدخل اسمك..." />
+            <button onclick="setUsername()">ابدأ المحادثة</button>
+        </div>
+
+        <!-- Chat window, hidden until username is set -->
+        <div id="chatWindow" style="display: none;">
+            <div class="chat-window">
+                <div id="messages"></div>
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="أدخل رسالتك..." onkeypress="handleKeyPress(event)" />
+                <button onclick="sendMessage()">إرسال</button>
+            </div>
+        </div>
+
+        <!-- Video Chat Section -->
+        <div id="videoChat" style="display: none;">
+            <div class="video-container">
+                <video id="localVideo" autoplay muted></video>
+                <video id="remoteVideo" autoplay></video>
+            </div>
+
+            <div class="video-buttons">
+                <button onclick="startCall()">ابدأ مكالمة فيديو</button>
+                <button onclick="endCall()">إنهاء المكالمة</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chatMessages = [];
+        let username = '';
+        let localStream;
+        let peerConnection;
+        const servers = {
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        };
+
+        // Set the username and display the chat window
+        function setUsername() {
+            const usernameInput = document.getElementById('usernameInput').value.trim();
+            if (usernameInput) {
+                username = usernameInput;
+                document.getElementById('usernameForm').style.display = 'none';
+                document.getElementById('chatWindow').style.display = 'block';
+                document.getElementById('videoChat').style.display = 'block';
+            } else {
+                alert("يرجى إدخال اسم مستخدم.");
+            }
+        }
+
+        // إرسال الرسالة عند الضغط على زر Enter
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // دالة لإرسال الرسالة
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+
+            if (messageText !== "") {
+                chatMessages.push({ text: messageText, user: username });
+                displayMessages();
+                messageInput.value = '';
+                scrollToBottom();
+            } else {
+                alert("يرجى إدخال رسالة.");
+            }
+        }
+
+        // دالة لعرض الرسائل في نافذة الدردشة
+        function displayMessages() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            chatMessages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.innerHTML = `<span class="username">${message.user}:</span> ${message.text}`;
+                messagesDiv.appendChild(messageDiv);
+            });
+        }
+
+        // دالة للتمرير إلى آخر رسالة
+        function scrollToBottom() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function startCall() {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    // إرسال المرشحات إلى الطرف الآخر (لتطوير)
+                }
+            };
+
+            peerConnection.ontrack = event => {
+                document.getElementById('remoteVideo').srcObject = event.streams[0];
+            };
+        }
+
+        function endCall() {
+            peerConnection.close();
+            localStream.getTracks().forEach(track => track.stop());
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+        }
+    </script>
+</body>
+</html>
